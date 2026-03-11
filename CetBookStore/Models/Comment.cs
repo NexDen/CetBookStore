@@ -21,6 +21,6 @@ namespace CetBookStore.Models
         public int BookId { get; set; }
         // Navigation properties
 
-        public virtual Book Book { get; set; } = null!;
+        public virtual Book? Book { get; set; } = null!;
     }
 }
