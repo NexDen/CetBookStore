@@ -1,18 +1,74 @@
+using CetBookStore.Data;
 using CetBookStore.Models;
+using CetBookStore.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace CetBookStore.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly ApplicationDbContext context;
+
+        public HomeController(ApplicationDbContext context)
+        {
+            this.context = context;
+        }
+
+
+        public async Task<IActionResult> Index()
         {
 
-            Book  book= new Book();
 
-            
-            return View();
+            HomePageViewModel homePageViewModel = new HomePageViewModel();
+
+
+           homePageViewModel.MostCommenteds =await context.Books.
+                OrderByDescending(b => b.Comments.Count)
+                .ThenByDescending(b => b.Title)
+                .Take(3)
+                .Select(b => new BookViewModel
+            {
+                Id = b.Id,
+                Title = b.Title,
+                Author = b.Author,
+                Price = b.Price,
+                OldPrice = b.PreviousPrice,
+                IsInSale = b.IsInSale
+
+                }).ToListAsync();
+
+            homePageViewModel.NewArrivals = await context.Books
+                .OrderByDescending(b => b.CreatedDate)
+                .ThenBy(b => b.Title)
+                .Take(3)
+                .Select(b => new BookViewModel
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author,
+                    Price = b.Price,
+                    OldPrice = b.PreviousPrice,
+                    IsInSale = b.IsInSale
+                }).ToListAsync();
+
+
+            homePageViewModel.RandomBoooks = await context.Books
+                .OrderBy(b => Guid.NewGuid())
+                .Take(6)
+                .Select(b => new BookViewModel
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author,
+                    Price = b.Price,
+                    OldPrice = b.PreviousPrice,
+                    IsInSale = b.IsInSale
+                }).ToListAsync();
+
+            return View(homePageViewModel);
         }
 
         public IActionResult Privacy()
