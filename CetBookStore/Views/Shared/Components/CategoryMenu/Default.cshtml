@@ -1,0 +1,7 @@
+@model IEnumerable<CetBookStore.Models.Category>
+@foreach (var category in Model)
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-controller="Categories" asp-action="Details" asp-route-id="@category.Id">@category.Name</a>
+    </li>
+}

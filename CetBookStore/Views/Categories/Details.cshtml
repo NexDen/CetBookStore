@@ -1,4 +1,4 @@
-﻿@model CetBookStore.Models.Category
+@model CetBookStore.Models.Category
 
 @{
     ViewData["Title"] = Model.Name;
@@ -13,7 +13,7 @@
     <thead>
         <tr>
             <th>
-               Title
+               Name
             </th>
             
             <th>
@@ -35,7 +35,7 @@
         {
             <tr>
                 <td>
-                    <a asp-action="Details" asp-controller="Books" asp-route-id="@item.Id"> @Html.DisplayFor(modelItem => item.Title)</a>
+                    <a asp-action="Details" asp-controller="Books" asp-route-id="@item.Id"> @Html.DisplayFor(modelItem => item.Name)</a>
                 </td>
                
                 <td>
@@ -51,9 +51,17 @@
                 </td>
                
                 <td>
-                    <a asp-action="" asp-route-id="@item.Id">Buy Now</a> |
-                    <a asp-action="" asp-route-id="@item.Id">Add to Basket</a> 
-                    
+                    <form asp-controller="Orders" asp-action="BuyNow" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="itemId" value="@item.Id" />
+                        <button class="btn btn-sm btn-success">Buy Now</button>
+                    </form>
+                    |
+                    <form asp-controller="Cart" asp-action="AddToCart" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="itemId" value="@item.Id" />
+                        <button class="btn btn-sm btn-primary">Add to Basket</button>
+                    </form>
                 </td>
             </tr>
         }

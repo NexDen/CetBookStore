@@ -58,10 +58,20 @@ namespace CetBookStore.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,Author,Publisher,PageCount,Price,IsInSale,PreviousPrice,PublicationDate,CategoryId")] Book book)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Author,Publisher,PageCount,Price,IsInSale,PreviousPrice,PublicationDate,CategoryId")] Book book)
         {
             if (ModelState.IsValid)
             {
+                var tzPublicationDate = book.PublicationDate.ToUniversalTime();
+                var tzCreatedDate = book.CreatedDate.ToUniversalTime();
+                book.PublicationDate = tzPublicationDate;
+                book.CreatedDate = tzCreatedDate;
+
+                if (book.PreviousPrice == null && !book.IsInSale)
+                {
+                    book.PreviousPrice = book.Price;
+                }
+                
                 _context.Add(book);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -92,7 +102,7 @@ namespace CetBookStore.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Author,Publisher,PageCount,Price,IsInSale,PreviousPrice,PublicationDate,CreatedDate,CategoryId")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Author,Publisher,PageCount,Price,IsInSale,PreviousPrice,PublicationDate,CreatedDate,CategoryId")] Book book)
         {
             if (id != book.Id)
             {

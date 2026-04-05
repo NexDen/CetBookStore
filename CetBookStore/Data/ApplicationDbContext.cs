@@ -6,8 +6,10 @@ namespace CetBookStore.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext(options)
     {
-            public DbSet<Book> Books { get; set; }
-            public DbSet<Category> Categories { get; set; }
-           public DbSet<Comment> Comments { get; set; }
+        public DbSet<Book> Books { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
     }
 }

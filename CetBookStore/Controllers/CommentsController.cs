@@ -48,7 +48,7 @@ namespace CetBookStore.Controllers
         // GET: Comments/Create
         public IActionResult Create()
         {
-            ViewData["BookId"] = new SelectList(_context.Books, "Id", "Title");
+            ViewData["BookId"] = new SelectList(_context.Books, "Id", "Name");
             return View();
         }
 
@@ -65,7 +65,7 @@ namespace CetBookStore.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BookId"] = new SelectList(_context.Books, "Id", "Title", comment.BookId);
+            ViewData["BookId"] = new SelectList(_context.Books, "Id", "Name", comment.BookId);
             return View(comment);
         }
 

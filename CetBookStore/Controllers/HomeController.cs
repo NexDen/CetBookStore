@@ -27,30 +27,30 @@ namespace CetBookStore.Controllers
 
            homePageViewModel.MostCommenteds =await context.Books.
                 OrderByDescending(b => b.Comments.Count)
-                .ThenByDescending(b => b.Title)
+                .ThenByDescending(b => b.Name)
                 .Take(3)
                 .Select(b => new BookViewModel
             {
                 Id = b.Id,
-                Title = b.Title,
+                Name = b.Name,
                 Author = b.Author,
                 Price = b.Price,
-                OldPrice = b.PreviousPrice,
+                OldPrice = b.PreviousPrice??0,
                 IsInSale = b.IsInSale
 
                 }).ToListAsync();
 
             homePageViewModel.NewArrivals = await context.Books
                 .OrderByDescending(b => b.CreatedDate)
-                .ThenBy(b => b.Title)
+                .ThenBy(b => b.Name)
                 .Take(3)
                 .Select(b => new BookViewModel
                 {
                     Id = b.Id,
-                    Title = b.Title,
+                    Name = b.Name,
                     Author = b.Author,
                     Price = b.Price,
-                    OldPrice = b.PreviousPrice,
+                    OldPrice = b.PreviousPrice??0,
                     IsInSale = b.IsInSale
                 }).ToListAsync();
 
@@ -61,10 +61,10 @@ namespace CetBookStore.Controllers
                 .Select(b => new BookViewModel
                 {
                     Id = b.Id,
-                    Title = b.Title,
+                    Name = b.Name,
                     Author = b.Author,
                     Price = b.Price,
-                    OldPrice = b.PreviousPrice,
+                    OldPrice = b.PreviousPrice??0,
                     IsInSale = b.IsInSale
                 }).ToListAsync();
 
