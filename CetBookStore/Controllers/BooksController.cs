@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using CetBookStore.Data;
 using CetBookStore.Models;
 using Microsoft.AspNetCore.Authorization;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace CetBookStore.Controllers
 {
@@ -65,18 +67,12 @@ namespace CetBookStore.Controllers
         {
             if (ModelState.IsValid)
             {
+                var tz = book.CreatedDate.ToUniversalTime();
+                book.CreatedDate = tz;
 
                 if (book.ImageFile != null)
                 {
-
-                    var fileExtension = Path.GetExtension(book.ImageFile.FileName);
-                    var newFileName = Guid.NewGuid().ToString("N") + fileExtension;
-
-                    book.ImageFile.OpenReadStream().CopyTo(
-                        new FileStream(Path.Combine(_hostEnvironment.WebRootPath,
-                        "images", newFileName),
-                        FileMode.Create));
-                    book.ImageUrl = newFileName;  
+                    book.ImageUrl = await SaveResizedImageAsync(book.ImageFile);
                     _context.Add(book);
                      await _context.SaveChangesAsync();
                      return RedirectToAction(nameof(Index));
@@ -84,10 +80,40 @@ namespace CetBookStore.Controllers
                     ModelState.AddModelError("ImageFile", "Please upload an image.");
 
                 }
-              
+
             }
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", book.CategoryId);
             return View(book);
+        }
+
+        private async Task<string> SaveResizedImageAsync(IFormFile imageFile)
+        {
+            const int maxWidth = 1024;
+            var fileExtension = Path.GetExtension(imageFile.FileName);
+            var newFileName = Guid.NewGuid().ToString("N") + fileExtension;
+            var imagesDir = Path.Combine(_hostEnvironment.WebRootPath, "images");
+            Directory.CreateDirectory(imagesDir);
+            var fullPath = Path.Combine(imagesDir, newFileName);
+
+            using var stream = imageFile.OpenReadStream();
+            using var image = await Image.LoadAsync(stream);
+            if (image.Width > maxWidth)
+            {
+                image.Mutate(x => x.Resize(maxWidth, 0));
+            }
+            await image.SaveAsync(fullPath);
+
+            return newFileName;
+        }
+
+        private void DeleteImage(string? fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) return;
+            var fullPath = Path.Combine(_hostEnvironment.WebRootPath, "images", fileName);
+            if (System.IO.File.Exists(fullPath))
+            {
+                System.IO.File.Delete(fullPath);
+            }
         }
 
         // GET: Books/Edit/5
@@ -112,7 +138,7 @@ namespace CetBookStore.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Author,Publisher,PageCount,Price,IsInSale,PreviousPrice,PublicationDate,CreatedDate,CategoryId")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Author,Publisher,PageCount,Price,IsInSale,PreviousPrice,PublicationDate,CreatedDate,CategoryId,ImageFile")] Book book)
         {
             if (id != book.Id)
             {
@@ -123,6 +149,22 @@ namespace CetBookStore.Controllers
             {
                 try
                 {
+                    var existing = await _context.Books.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id);
+                    if (existing == null)
+                    {
+                        return NotFound();
+                    }
+
+                    if (book.ImageFile != null)
+                    {
+                        book.ImageUrl = await SaveResizedImageAsync(book.ImageFile);
+                        DeleteImage(existing.ImageUrl);
+                    }
+                    else
+                    {
+                        book.ImageUrl = existing.ImageUrl;
+                    }
+
                     _context.Update(book);
                     await _context.SaveChangesAsync();
                 }

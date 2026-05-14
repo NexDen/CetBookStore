@@ -10,9 +10,28 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ImageUrl" />
+            <div class="form-group">
+                <label class="control-label">Current Image</label>
+                <div>
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="~/images/@Model.ImageUrl" alt="Book image" style="max-width: 200px; max-height: 300px;" />
+                    }
+                    else
+                    {
+                        <span class="text-muted">No image</span>
+                    }
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImageFile" class="control-label">Replace Image (optional)</label>
+                <input asp-for="ImageFile" type="file" accept="image/*" class="form-control" />
+                <span asp-validation-for="ImageFile" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
                 <input asp-for="Title" class="form-control" />
